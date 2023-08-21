@@ -105,12 +105,10 @@ export default function Quiz() {
 
   const toggleMicHandler = async () => {
     if (isMicOn) {
-      // await stopProducingAudio();
       await stopAudioStream();
       setIsMicOn(false);
     } else {
       await fetchAudioStream();
-      // await produceAudio(micStream);
       setIsMicOn(true);
     }
   };
@@ -228,6 +226,9 @@ export default function Quiz() {
             <button onClick={toggleMicHandler}>Toggle Mic</button>
           </div>
         )}
+        <div className="flex w-full px-10">
+          <button onClick={() => {}}>Raise Hand</button>
+        </div>
         <button
           onClick={() => {
             leaveRoom();
