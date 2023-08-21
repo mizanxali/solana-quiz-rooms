@@ -10,7 +10,7 @@ import {
 } from "@huddle01/react/hooks";
 import { useClient, useWallet } from "@wallet01/react";
 import { useRouter } from "next/router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getMessage, getSolanaAccessToken } from "@huddle01/auth";
 import { useHuddle01 } from "@huddle01/react";
 import { Video, Audio } from "@huddle01/react/components";
@@ -21,6 +21,8 @@ export default function Quiz() {
   const { roomId } = router.query;
 
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const [isMicOn, setIsMicOn] = useState(false);
 
   //wallet01 hooks
   const { connectors } = useClient();
@@ -38,6 +40,14 @@ export default function Quiz() {
     stopProducingVideo,
     stream: camStream,
   } = useVideo();
+  const {
+    fetchAudioStream,
+    stopAudioStream,
+    error: micError,
+    produceAudio,
+    stopProducingAudio,
+    stream: micStream,
+  } = useAudio();
   const { sendData } = useAppUtils();
   const { peers } = usePeers();
   const { leaveRoom } = useRoom();
@@ -63,8 +73,12 @@ export default function Quiz() {
     joinRoom();
   });
 
-  useEventListener("room:joined", async () => {
-    await produceVideo(camStream);
+  useEventListener("app:cam-on", async (stream) => {
+    await produceVideo(stream);
+  });
+
+  useEventListener("app:mic-on", async (stream) => {
+    await produceAudio(stream);
   });
 
   const joinHuddle01Room = async () => {
@@ -89,6 +103,18 @@ export default function Quiz() {
     sendData("*", { emoji: emoji });
   };
 
+  const toggleMicHandler = async () => {
+    if (isMicOn) {
+      // await stopProducingAudio();
+      await stopAudioStream();
+      setIsMicOn(false);
+    } else {
+      await fetchAudioStream();
+      // await produceAudio(micStream);
+      setIsMicOn(true);
+    }
+  };
+
   return (
     <>
       <Flex
@@ -106,8 +132,8 @@ export default function Quiz() {
             <h1>Host</h1>
             {me && me.role === "host" && (
               <video
-                width={384}
-                height={384}
+                width={200}
+                height={200}
                 ref={videoRef}
                 autoPlay
                 muted
@@ -115,65 +141,93 @@ export default function Quiz() {
             )}
             {Object.values(peers)
               .filter(({ role }) => role === "host")
-              .map(({ peerId, cam }) => {
+              .map(({ peerId, cam, mic }) => {
                 return (
                   <>
                     <div key={peerId}>{peerId}</div>
                     {cam && (
                       <Video
-                        className="w-96 h-96"
+                        className="w-44 h-44"
                         peerId={peerId}
                         track={cam}
+                      />
+                    )}
+                    {mic && (
+                      <Audio
+                        className="w-44 h-44"
+                        peerId={peerId}
+                        track={mic}
                       />
                     )}
                   </>
                 );
               })}
           </div>
-          <div className="w-1/2 flex flex-col gap-2">
+          <div className="w-1/2 flex flex-col gap-2 border-l-2 border-white">
+            {me && me.role !== "host" && (
+              <video
+                width={200}
+                height={200}
+                ref={videoRef}
+                autoPlay
+                muted
+              ></video>
+            )}
             {Object.values(peers)
               .filter(({ role }) => role !== "host")
-              .map(({ peerId, cam }) => {
+              .map(({ peerId, cam, role, mic }) => {
                 return (
-                  <div
-                    onClick={() => {
-                      if (me.role === "host") changePeerRole(peerId, "coHost");
-                    }}
-                  >
-                    <div key={peerId}>{peerId}</div>
-                    {cam && (
-                      <Video
-                        className="w-96 h-96"
-                        peerId={peerId}
-                        track={cam}
-                      />
-                    )}
+                  <div className="flex gap-2">
+                    <div className="flex-1" key={peerId}>
+                      {peerId}
+                    </div>
+                    <div className="flex-1">
+                      {cam && (
+                        <Video
+                          className="w-44 h-44"
+                          peerId={peerId}
+                          track={cam}
+                        />
+                      )}
+                      {mic && (
+                        <Audio
+                          className="w-44 h-44"
+                          peerId={peerId}
+                          track={mic}
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      {me.role === "host" && role !== "coHost" && (
+                        <button
+                          onClick={() => {
+                            changePeerRole(peerId, "coHost");
+                          }}
+                        >
+                          Make Speaker
+                        </button>
+                      )}
+                      {me.role === "host" && role === "coHost" && (
+                        <button
+                          onClick={() => {
+                            changePeerRole(peerId, "peer");
+                          }}
+                        >
+                          Remove Speaker
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
           </div>
         </div>
-        {/* {me.role === "host" && (
-          <div className="flex flex-col gap-2">
-            <h6>Host Controls</h6>
-            <button
-              onClick={() => {
-                changeRoomControls("audioLocked", true);
-              }}
-            >
-              Disallow Audio
-            </button>
-          </div>
-        )} */}
 
-        <button
-          onClick={() => {
-            console.log(camStream);
-            sendReaction("okokoklalala");
-          }}
-        >
-          Log peers
-        </button>
+        {me.role !== "peer" && (
+          <div className="flex w-full px-10">
+            <button onClick={toggleMicHandler}>Toggle Mic</button>
+          </div>
+        )}
         <button
           onClick={() => {
             leaveRoom();
