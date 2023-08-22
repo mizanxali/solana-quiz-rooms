@@ -52,7 +52,7 @@ export default function Quiz() {
   } = useAudio();
   const { sendData } = useAppUtils();
   const { peers } = usePeers();
-  const { leaveRoom } = useRoom();
+  // const { leaveRoom } = useRoom();
   const { changePeerRole, changeRoomControls, changePeerControls, kickPeer } =
     useAcl();
 
@@ -190,9 +190,7 @@ export default function Quiz() {
               .map(({ peerId, cam, role, mic }) => {
                 return (
                   <div className="flex-col gap-2">
-                    <div className="flex-1" key={peerId}>
-                      {peerId}
-                    </div>
+                    <div>{peerId}</div>
                     {cam && (
                       <Video
                         className="w-44 h-44"
@@ -210,24 +208,28 @@ export default function Quiz() {
                     {otherRaisedHands.includes(peerId) && (
                       <span>Hand Raised</span>
                     )}
-                    {me.role === "host" && role !== "coHost" && (
-                      <button
-                        onClick={() => {
-                          changePeerRole(peerId, "coHost");
-                        }}
-                      >
-                        Make Speaker
-                      </button>
-                    )}
-                    {me.role === "host" && role === "coHost" && (
-                      <button
-                        onClick={() => {
-                          changePeerRole(peerId, "peer");
-                        }}
-                      >
-                        Remove Speaker
-                      </button>
-                    )}
+                    <div>
+                      {me.role === "host" && role !== "coHost" && (
+                        <button
+                          onClick={() => {
+                            changePeerRole(peerId, "coHost");
+                          }}
+                        >
+                          Make Speaker
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      {me.role === "host" && role === "coHost" && (
+                        <button
+                          onClick={() => {
+                            changePeerRole(peerId, "peer");
+                          }}
+                        >
+                          Remove Speaker
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -249,7 +251,7 @@ export default function Quiz() {
         </div>
         <button
           onClick={() => {
-            leaveRoom();
+            // leaveRoom();
             router.push("/");
           }}
         >
