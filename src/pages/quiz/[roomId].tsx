@@ -218,6 +218,7 @@ export default function Quiz() {
                     <div>
                       {me.role === "host" && role !== "coHost" && (
                         <button
+                          className="px-3 py-2 rounded-md border border-white"
                           onClick={() => {
                             changePeerRole(peerId, "coHost");
                           }}
@@ -229,6 +230,7 @@ export default function Quiz() {
                     <div>
                       {me.role === "host" && role === "coHost" && (
                         <button
+                          className="px-3 py-2 rounded-md border border-white"
                           onClick={() => {
                             changePeerRole(peerId, "peer");
                           }}
@@ -248,24 +250,24 @@ export default function Quiz() {
         </div> */}
         {me.role !== "peer" && (
           <div className="flex w-full px-10 justify-center">
-            <button onClick={toggleMicHandler}>Toggle Mic</button>
+            <button
+              className="px-3 py-2 rounded-md border border-white"
+              onClick={toggleMicHandler}
+            >
+              Toggle Mic
+            </button>
           </div>
         )}
         {me.role !== "host" && (
           <div className="flex w-full px-10 justify-center">
-            <button onClick={onRaiseHand}>
+            <button
+              className="px-3 py-2 rounded-md border border-white"
+              onClick={onRaiseHand}
+            >
               {isHandRaised ? "Lower Hand" : "Raise Hand"}
             </button>
           </div>
         )}
-        {/* <button
-          onClick={() => {
-            // leaveRoom();
-            router.push("/");
-          }}
-        >
-          Leave Room
-        </button> */}
       </Flex>
     </>
   );
