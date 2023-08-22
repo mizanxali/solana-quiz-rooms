@@ -142,7 +142,7 @@ export default function Quiz() {
           <h1 className="text-center">Host</h1>
           <div className="w-full flex justify-center items-center">
             {me && me.role === "host" && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 items-center">
                 <div>You</div>
                 <video
                   width={200}
@@ -157,7 +157,7 @@ export default function Quiz() {
               .filter(({ role }) => role === "host")
               .map(({ peerId, cam, mic }) => {
                 return (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 items-center">
                     <div key={peerId}>{peerId}</div>
                     {cam && (
                       <Video
@@ -181,7 +181,7 @@ export default function Quiz() {
           <h1 className="text-center">Participants</h1>
           <div className="w-full flex flex-row gap-2 justify-center items-center">
             {me && me.role !== "host" && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 items-center">
                 <div>You</div>
                 <video
                   width={200}
@@ -196,7 +196,7 @@ export default function Quiz() {
               .filter(({ role }) => role !== "host")
               .map(({ peerId, cam, role, mic }) => {
                 return (
-                  <div className="flex-col gap-2">
+                  <div className="flex-col gap-2 items-center">
                     <div>{peerId}</div>
                     {cam && (
                       <Video
