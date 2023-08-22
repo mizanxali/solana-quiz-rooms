@@ -23,6 +23,8 @@ export default function Quiz() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [isMicOn, setIsMicOn] = useState(false);
+  const [isHandRaised, setIsHandRaised] = useState(false);
+  const [otherRaisedHands, setOtherRaisedHands] = useState<string[]>([]);
 
   //wallet01 hooks
   const { connectors } = useClient();
@@ -96,11 +98,21 @@ export default function Quiz() {
 
   useEventListener("room:data-received", ({ fromPeerId, payload }) => {
     //show hand raise
+    const raisedHands = [...otherRaisedHands];
+    if (payload.handRaise) {
+      raisedHands.push(fromPeerId);
+      setOtherRaisedHands([...raisedHands]);
+    } else {
+      const removeIndex = raisedHands.findIndex((i) => i === fromPeerId);
+      if (removeIndex > -1) raisedHands.splice(removeIndex, 1);
+      setOtherRaisedHands([...raisedHands]);
+    }
   });
 
-  const sendReaction = (emoji: any) => {
+  const onRaiseHand = () => {
     // Here "*" represents all peers in the room
-    sendData("*", { emoji: emoji });
+    sendData("*", { handRaise: !isHandRaised });
+    setIsHandRaised(!isHandRaised);
   };
 
   const toggleMicHandler = async () => {
@@ -125,9 +137,9 @@ export default function Quiz() {
       >
         <div>{roomState}</div>
         <div>{JSON.stringify(me)}</div>
-        <div className="flex w-full h-full">
-          <div className="w-1/2">
-            <h1>Host</h1>
+        <div className="w-full h-full flex flex-col items-center">
+          <h1 className="text-center">Host</h1>
+          <div className="w-full flex justify-center items-center">
             {me && me.role === "host" && (
               <video
                 width={200}
@@ -141,7 +153,7 @@ export default function Quiz() {
               .filter(({ role }) => role === "host")
               .map(({ peerId, cam, mic }) => {
                 return (
-                  <>
+                  <div className="flex flex-col gap-2">
                     <div key={peerId}>{peerId}</div>
                     {cam && (
                       <Video
@@ -157,11 +169,13 @@ export default function Quiz() {
                         track={mic}
                       />
                     )}
-                  </>
+                  </div>
                 );
               })}
           </div>
-          <div className="w-1/2 flex flex-col gap-2 border-l-2 border-white">
+
+          <h1 className="text-center">Participants</h1>
+          <div className="w-full flex flex-row gap-2 justify-center items-center">
             {me && me.role !== "host" && (
               <video
                 width={200}
@@ -175,59 +189,63 @@ export default function Quiz() {
               .filter(({ role }) => role !== "host")
               .map(({ peerId, cam, role, mic }) => {
                 return (
-                  <div className="flex gap-2">
+                  <div className="flex-col gap-2">
                     <div className="flex-1" key={peerId}>
                       {peerId}
                     </div>
-                    <div className="flex-1">
-                      {cam && (
-                        <Video
-                          className="w-44 h-44"
-                          peerId={peerId}
-                          track={cam}
-                        />
-                      )}
-                      {mic && (
-                        <Audio
-                          className="w-44 h-44"
-                          peerId={peerId}
-                          track={mic}
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      {me.role === "host" && role !== "coHost" && (
-                        <button
-                          onClick={() => {
-                            changePeerRole(peerId, "coHost");
-                          }}
-                        >
-                          Make Speaker
-                        </button>
-                      )}
-                      {me.role === "host" && role === "coHost" && (
-                        <button
-                          onClick={() => {
-                            changePeerRole(peerId, "peer");
-                          }}
-                        >
-                          Remove Speaker
-                        </button>
-                      )}
-                    </div>
+                    {cam && (
+                      <Video
+                        className="w-44 h-44"
+                        peerId={peerId}
+                        track={cam}
+                      />
+                    )}
+                    {mic && (
+                      <Audio
+                        className="w-44 h-44"
+                        peerId={peerId}
+                        track={mic}
+                      />
+                    )}
+                    {otherRaisedHands.includes(peerId) && (
+                      <span>Hand Raised</span>
+                    )}
+                    {me.role === "host" && role !== "coHost" && (
+                      <button
+                        onClick={() => {
+                          changePeerRole(peerId, "coHost");
+                        }}
+                      >
+                        Make Speaker
+                      </button>
+                    )}
+                    {me.role === "host" && role === "coHost" && (
+                      <button
+                        onClick={() => {
+                          changePeerRole(peerId, "peer");
+                        }}
+                      >
+                        Remove Speaker
+                      </button>
+                    )}
                   </div>
                 );
               })}
           </div>
         </div>
 
+        <div className="flex w-full px-10 justify-center">
+          <button onClick={() => console.log(peers)}>Log Peers</button>
+        </div>
         {me.role !== "peer" && (
-          <div className="flex w-full px-10">
+          <div className="flex w-full px-10 justify-center">
             <button onClick={toggleMicHandler}>Toggle Mic</button>
           </div>
         )}
-        <div className="flex w-full px-10">
-          <button onClick={() => {}}>Raise Hand</button>
+        <div className="flex w-full px-10 justify-center">
+          <button onClick={onRaiseHand}>
+            {isHandRaised ? "Lower Hand" : "Raise Hand"}
+          </button>
         </div>
         <button
           onClick={() => {
