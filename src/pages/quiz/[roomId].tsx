@@ -65,9 +65,9 @@ export default function Quiz() {
     if (camStream && videoRef.current) videoRef.current.srcObject = camStream;
   }, [camStream, videoRef.current]);
 
-  useEffect(() => {
-    if (me.role === "host") changeRoomControls("audioLocked", true);
-  }, [me.role]);
+  // useEffect(() => {
+  //   if (me.role === "host") changeRoomControls("audioLocked", true);
+  // }, [me.role]);
 
   //auto-join room as soon as user enters Huddle01 lobby
   useEventListener("lobby:joined", async () => {
@@ -136,18 +136,22 @@ export default function Quiz() {
         h="100%"
       >
         <div>{roomState}</div>
-        <div>{JSON.stringify(me)}</div>
+        {/* <div>{JSON.stringify(me)}</div> */}
+
         <div className="w-full h-full flex flex-col items-center">
           <h1 className="text-center">Host</h1>
           <div className="w-full flex justify-center items-center">
             {me && me.role === "host" && (
-              <video
-                width={200}
-                height={200}
-                ref={videoRef}
-                autoPlay
-                muted
-              ></video>
+              <div className="flex flex-col gap-2">
+                <div>You</div>
+                <video
+                  width={200}
+                  height={200}
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                ></video>
+              </div>
             )}
             {Object.values(peers)
               .filter(({ role }) => role === "host")
@@ -177,13 +181,16 @@ export default function Quiz() {
           <h1 className="text-center">Participants</h1>
           <div className="w-full flex flex-row gap-2 justify-center items-center">
             {me && me.role !== "host" && (
-              <video
-                width={200}
-                height={200}
-                ref={videoRef}
-                autoPlay
-                muted
-              ></video>
+              <div className="flex flex-col gap-2">
+                <div>You</div>
+                <video
+                  width={200}
+                  height={200}
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                ></video>
+              </div>
             )}
             {Object.values(peers)
               .filter(({ role }) => role !== "host")
@@ -236,27 +243,29 @@ export default function Quiz() {
           </div>
         </div>
 
-        <div className="flex w-full px-10 justify-center">
+        {/* <div className="flex w-full px-10 justify-center">
           <button onClick={() => console.log(peers)}>Log Peers</button>
-        </div>
+        </div> */}
         {me.role !== "peer" && (
           <div className="flex w-full px-10 justify-center">
             <button onClick={toggleMicHandler}>Toggle Mic</button>
           </div>
         )}
-        <div className="flex w-full px-10 justify-center">
-          <button onClick={onRaiseHand}>
-            {isHandRaised ? "Lower Hand" : "Raise Hand"}
-          </button>
-        </div>
-        <button
+        {me.role !== "host" && (
+          <div className="flex w-full px-10 justify-center">
+            <button onClick={onRaiseHand}>
+              {isHandRaised ? "Lower Hand" : "Raise Hand"}
+            </button>
+          </div>
+        )}
+        {/* <button
           onClick={() => {
             // leaveRoom();
             router.push("/");
           }}
         >
           Leave Room
-        </button>
+        </button> */}
       </Flex>
     </>
   );

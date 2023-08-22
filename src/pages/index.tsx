@@ -21,7 +21,7 @@ export default function Home() {
         h="100%"
       >
         <WalletBtn />
-        <button onClick={createQuizRoom}>create room</button>
+        {/* <button onClick={createQuizRoom}>create room</button> */}
         <div className="mt-6 justify-center flex gap-4 flex-wrap">
           {ROOMS.map((room) => (
             <RoomCard key={room} roomId={room} />
